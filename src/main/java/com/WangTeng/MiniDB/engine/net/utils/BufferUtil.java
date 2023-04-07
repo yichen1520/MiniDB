@@ -1,4 +1,4 @@
-package com.WangTeng.MiniDB.engine.net.proto.utils;
+package com.WangTeng.MiniDB.engine.net.utils;
 
 import io.netty.buffer.ByteBuf;
 
@@ -12,8 +12,8 @@ public class BufferUtil {
         buffer.writeBytes(b);
     }
 
-    //采用小序列的方式写入
-    public static final void writeUB2(ByteBuf buffer, int i) {
+    //采用小序列的方式写入 强转会丢弃高位，右移读
+    public static final void writeUB2(ByteBuf buffer, int i) {  //先写低位，将低位放前面
         buffer.writeByte((byte) (i & 0xff));
         buffer.writeByte((byte) (i >>> 8));
     }
