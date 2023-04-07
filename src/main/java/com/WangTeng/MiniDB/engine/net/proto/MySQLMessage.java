@@ -225,8 +225,7 @@ public class MySQLMessage {
 
     /**
      * 数据类型为  二进制数据  时：数据长度由前1-9字节决定，readLength()方法返回真实数据长度
-     *
-     * @return
+     * @return 返回记录长度的字节数据
      */
     public byte[] readBytesWithLength() {
         int length = (int) readLength();

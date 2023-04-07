@@ -101,7 +101,7 @@ public class BufferUtil {
     }
 
     /**
-     * 写下字节数据的长度 + 真实数据
+     * 写下记录长度的字节数据 + 真实数据
      * @param buffer
      * @param src
      */
@@ -119,6 +119,7 @@ public class BufferUtil {
             buffer.writeByte((byte) 254);
             writeLong(buffer, length);
         }
+
         buffer.writeBytes(src);
     }
 

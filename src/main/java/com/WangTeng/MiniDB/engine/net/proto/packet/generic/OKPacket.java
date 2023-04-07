@@ -9,6 +9,8 @@ import io.netty.channel.ChannelHandlerContext;
 
 /**
  * OK数据包从服务器发送到客户端，以发出命令成功完成的信号。
+ * OK数据包中的message信息包含消息的长度，确保执行结果的正确解析
+ * 但和MySQL协议中OKPacket中info不同的是，这里message的长度单指message的长度值
  */
 public class OKPacket extends MySQLPacket {
     public static final byte HEADER = 0x00;   // OK: header = 0 and length of packet > 7
@@ -41,16 +43,19 @@ public class OKPacket extends MySQLPacket {
     public void write(ChannelHandlerContext ctx){
         //默认使用直接内存，缓冲区大小为256字节
         ByteBuf buffer = ctx.alloc().buffer();
+
         BufferUtil.writeUB3(buffer,calcPacketSize());
-        buffer.writeByte(packetId);
-        buffer.writeByte(header);
+        BufferUtil.writeByte(buffer,packetId);
+
+        BufferUtil.writeByte(buffer,header);
         BufferUtil.writeLength(buffer,affectedRows);
         BufferUtil.writeLength(buffer,lastInsertId);
         BufferUtil.writeUB2(buffer,status_flags);
         BufferUtil.writeUB2(buffer,warnings);
         if(message != null){
-            BufferUtil.writeWithLength(buffer,message);
+            BufferUtil.writeWithLength(buffer,message); //写入长度 + message自身信息
         }
+        ctx.writeAndFlush(buffer);
     }
 
     @Override
@@ -67,6 +72,6 @@ public class OKPacket extends MySQLPacket {
 
     @Override
     protected String getPacketInfo() {
-        return "MYSQL OK Packet";
+        return "MySQL OK Packet";
     }
 }
