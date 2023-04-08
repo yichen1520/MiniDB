@@ -1,4 +1,4 @@
-package com.WangTeng.MiniDB.engine.net.utils.constants;
+package com.WangTeng.MiniDB.engine.net.proto.utils.constants;
 
 public interface Capabilities {
     /**

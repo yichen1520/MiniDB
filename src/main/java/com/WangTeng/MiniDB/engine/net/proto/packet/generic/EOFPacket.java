@@ -3,7 +3,7 @@ package com.WangTeng.MiniDB.engine.net.proto.packet.generic;
 import com.WangTeng.MiniDB.engine.net.proto.MySQLMessage;
 import com.WangTeng.MiniDB.engine.net.proto.packet.BinaryPacket;
 import com.WangTeng.MiniDB.engine.net.proto.packet.MySQLPacket;
-import com.WangTeng.MiniDB.engine.net.utils.BufferUtil;
+import com.WangTeng.MiniDB.engine.net.proto.utils.BufferUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 

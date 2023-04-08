@@ -1,4 +1,4 @@
-package com.WangTeng.MiniDB.engine.net.utils;
+package com.WangTeng.MiniDB.engine.net.proto.utils;
 
 import com.WangTeng.MiniDB.engine.net.proto.MySQLMessage;
 import io.netty.buffer.ByteBuf;

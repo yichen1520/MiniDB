@@ -3,7 +3,7 @@ package com.WangTeng.MiniDB.engine.net.codec;
 import java.util.List;
 
 import com.WangTeng.MiniDB.engine.net.proto.packet.BinaryPacket;
-import com.WangTeng.MiniDB.engine.net.utils.ByteUtil;
+import com.WangTeng.MiniDB.engine.net.proto.utils.ByteUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +14,6 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 
 public class MySqlPacketDecoder extends ByteToMessageDecoder {
     private static final Logger logger = LoggerFactory.getLogger(MySqlPacketDecoder.class);
-
     private final int packetHeaderSize = 4;                 //4个字节的消息头：3个字节的消息长度 + 1个字节的序号packetId
     private final int maxPacketSize = 16 * 1024 * 1024;     //发送的数据包最大为2^24,16M
 
