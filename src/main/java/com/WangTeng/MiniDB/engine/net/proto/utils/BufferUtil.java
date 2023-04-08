@@ -2,6 +2,9 @@ package com.WangTeng.MiniDB.engine.net.proto.utils;
 
 import io.netty.buffer.ByteBuf;
 
+/**
+ * 从低位开始读取，从右至左依次写入
+ */
 public class BufferUtil {
 
     public static final void writeByte(ByteBuf buffer, byte b) {
@@ -13,7 +16,7 @@ public class BufferUtil {
     }
 
     //采用小序列的方式写入 强转会丢弃高位，右移读
-    public static final void writeUB2(ByteBuf buffer, int i) {  //先写低位，将低位放前面
+    public static final void writeUB2(ByteBuf buffer, int i) {
         buffer.writeByte((byte) (i & 0xff));
         buffer.writeByte((byte) (i >>> 8));
     }
