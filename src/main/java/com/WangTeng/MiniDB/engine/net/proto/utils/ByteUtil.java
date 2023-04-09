@@ -4,6 +4,7 @@ import com.WangTeng.MiniDB.engine.net.proto.MySQLMessage;
 import io.netty.buffer.ByteBuf;
 
 /**
+ * 用于报文解码
  * 读取字节以及解码，小序列方式 后读的放在前面存储
  */
 public class ByteUtil {

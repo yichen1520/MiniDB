@@ -12,11 +12,11 @@ public class IndexDesc {
     // 主键属性
     private Attribute primaryAttr;
 
-    private Map<String, Attribute> attrsMap = new HashMap<String, Attribute>();
+    private Map<String, Attribute> attrsMap = new HashMap<>();
 
     public IndexDesc(Attribute[] attrs) {
         this.attrs = attrs;
-        attrsMap = new HashMap<String, Attribute>();
+        attrsMap = new HashMap<>();
         for (Attribute attr : attrs) {
             attrsMap.put(attr.getName(), attr);
             if (attr.isPrimaryKey()) {

@@ -1,5 +1,8 @@
 package com.WangTeng.MiniDB.util;
 
+/**
+ *对元组、页、值的读写
+ */
 public class BufferWrapper {
 
     private byte[] buffer;

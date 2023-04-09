@@ -57,7 +57,7 @@ public class IndexEntry {
 
     public void read(byte[] bytes) {
         BufferWrapper wrapper = new BufferWrapper(bytes);
-        List<Value> result = new ArrayList<Value>();
+        List<Value> result = new ArrayList<>();
         while (wrapper.remaining() > 0) {
             // 获取类型
             int type = wrapper.readByte();

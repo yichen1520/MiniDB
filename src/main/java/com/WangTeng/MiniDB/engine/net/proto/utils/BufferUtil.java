@@ -3,6 +3,7 @@ package com.WangTeng.MiniDB.engine.net.proto.utils;
 import io.netty.buffer.ByteBuf;
 
 /**
+ * 用于写入到具体报文的ByteBuf中
  * 从低位开始读取，从右至左依次写入
  */
 public class BufferUtil {

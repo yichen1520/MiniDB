@@ -2,6 +2,9 @@ package com.WangTeng.MiniDB.meta.factory;
 
 import com.WangTeng.MiniDB.meta.Table;
 
+/**
+ * 创建和管理关联关系
+ */
 public class RelFactory {
 
     private static RelFactory relFactory;
