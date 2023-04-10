@@ -8,6 +8,7 @@ import com.WangTeng.MiniDB.meta.value.ValueString;
 import com.WangTeng.MiniDB.store.fs.FStore;
 import com.WangTeng.MiniDB.store.item.Item;
 import com.WangTeng.MiniDB.store.page.PageNoAllocator;
+import com.WangTeng.MiniDB.util.ValueConvertUtil;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -49,6 +50,9 @@ public abstract class BaseIndex implements Index {
         isUnique = false;
     }
 
+    /**
+     * 创建索引，即添加一个索引元组
+     */
     public IndexEntry buildEntry(IndexEntry entry) {
         // 赋值的过程
         IndexEntry newEntry;
@@ -89,10 +93,7 @@ public abstract class BaseIndex implements Index {
             indexDesc = new IndexDesc(attributes);
             indexDesc.setPrimaryAttr(attributes[attributes.length - 1]);
         } else {
-            // cluster的entry包含所有的属性
             indexDesc = new IndexDesc(table.getAttributes());
-            // 主键,第一个是rowId
-            // indexDesc.setPrimaryAttr(attributes[0]);
         }
         return indexDesc;
     }
@@ -147,17 +148,17 @@ public abstract class BaseIndex implements Index {
     }
 
     public List<Item> getItems() {
-        List<Item> list = new LinkedList<Item>();
+        List<Item> list = new LinkedList<>();
         // 1 for name , attributes.length , 1 for isUnique , 1 for isPrimaryKey;
         int itemSize = 1 + attributes.length + 1 + 1;
-        Item itemSizeItem = new Item(new IndexEntry(new Value[] {new ValueInt(itemSize)}));
-        Item itemName = new Item(new IndexEntry(new Value[] {new ValueString(indexName)}));
+        Item itemSizeItem = new Item(new IndexEntry(new Value[]{new ValueInt(itemSize)}));
+        Item itemName = new Item(new IndexEntry(new Value[]{new ValueString(indexName)}));
         list.add(itemSizeItem);
         list.add(itemName);
         int isUnique = isUnique() ? 1 : 0;
         int isPrimaryKey = isPrimaryKey() ? 1 : 0;
-        Item isUniqueItem = new Item(new IndexEntry(new Value[] {new ValueInt(isUnique)}));
-        Item isPrimaryKeyItem = new Item(new IndexEntry(new Value[] {new ValueInt(isPrimaryKey)}));
+        Item isUniqueItem = new Item(new IndexEntry(new Value[]{new ValueInt(isUnique)}));
+        Item isPrimaryKeyItem = new Item(new IndexEntry(new Value[]{new ValueInt(isPrimaryKey)}));
         list.add(isUniqueItem);
         list.add(isPrimaryKeyItem);
         for (Attribute attribute : attributes) {

@@ -7,10 +7,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 存储了一页page中所有的tuple
+ * 存储了一页page中的bufferWrapper，并记录元组的数量
  */
 public class PageLoader {
+
     Page page;
+    /**
+     * 结合BpPage中的 writeToPage 方法看
+     * indexEntries中前五个IndexEntry中的Value[0] 通常表示一些属性信息，
+     *      如：isLeaf、isRoot、pageNo、parentPageNo、entryCount
+     * 下标从 5 开始存入节点关键字，entryCount表示要存入的数量
+     * 若不是叶子节点，indexEntries[5 + entryCount]的首元素存的是 childCount
+     * 若是叶子节点，indexEntries[5 + entryCount]的首元素存的是 前置节点页号，索引下一位置是后置节点页号
+     */
     private IndexEntry[] indexEntries;
     private int tupleCount;
 

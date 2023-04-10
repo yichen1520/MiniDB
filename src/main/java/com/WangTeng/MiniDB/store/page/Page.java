@@ -44,6 +44,7 @@ public class Page {
         }
     }
 
+    //写时将IndexEntry转成item写入到bufferWrapper中
     public boolean writeTuple(IndexEntry indexEntry) {
         return writeItem(new Item(indexEntry));
     }

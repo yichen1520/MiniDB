@@ -5,10 +5,14 @@ import com.WangTeng.MiniDB.index.CompareType;
 import com.WangTeng.MiniDB.meta.IndexEntry;
 import com.WangTeng.MiniDB.store.fs.FStore;
 import com.WangTeng.MiniDB.store.item.Item;
+import com.WangTeng.MiniDB.store.page.PageFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 叶子节点通过链表连接，非叶子节点通过指针连接
+ */
 public class BPNode {
     /**
      * 是否为叶子节点
@@ -24,7 +28,8 @@ public class BPNode {
      */
     protected int pageNo;
     /**
-     * 父节点
+     * 父节点的entries会包含子节点entries里的索引元组，
+     * 是因为这样可以方便地定位到所需数据的位置，减少磁盘I/O次数，提高检索效率
      */
     protected BPNode parent;
 
@@ -63,9 +68,9 @@ public class BPNode {
         this.bpTree = bpTree;
         this.pageNo = bpTree.getNextPageNo();
         // 默认root是false;
-        entries = new ArrayList<IndexEntry>();
+        entries = new ArrayList<>();
         if (!isLeaf) {
-            children = new ArrayList<BPNode>();
+            children = new ArrayList<>();
         }
         bpPage = PageFactory.getInstance().newBpPage(this);
     }
@@ -75,7 +80,10 @@ public class BPNode {
         this.isRoot = isRoot;
     }
 
-    public Position get(IndexEntry key, int comareType) {
+    /**
+     * @return 对应的BPNode节点中的entries关键字中可能符合条件的下标(索引)
+     */
+    public Position get(IndexEntry key, int compareType) {
         if (isLeaf) {
             for (int i = 0; i < entries.size(); i++) {
                 IndexEntry indexEntry = entries.get(i);
@@ -83,32 +91,32 @@ public class BPNode {
                     return new Position(this, i);
                 }
             }
-            if (comareType == CompareType.EQUAL) {
+            if (compareType == CompareType.EQUAL) {
                 return null;
             } else {
-                // 如果不是isEqual模式,则是searchRange,需要返回postiion
+                // 如果不是isEqual模式,则是searchRange,需要返回position
                 // 最后的正确性靠checkCondition保证
                 // 从0开始
-                if (comareType == CompareType.LOW) {
+                if (compareType == CompareType.LOW) {
                     return new Position(this, 0);
                 } else {
                     // position最后一个
                     return new Position(this, entries.size() - 1);
                 }
             }
-        } else {
-            // 非叶子节点
+        } else { // 非叶子节点
             // 如果key<最左边的key,沿第一个子节点继续搜索
             if (key.compareIndex(entries.get(0)) < 0) {
-                return children.get(0).get(key, comareType);
+                return children.get(0).get(key, compareType);
             } else if (key.compareIndex(entries.get(entries.size() - 1)) >= 0) {
                 // 如果key >  最右边的key,则按照最后一个子节点搜索
-                return children.get(children.size() - 1).get(key, comareType);
+                return children.get(children.size() - 1).get(key, compareType);
             } else {
                 for (int i = 0; i < entries.size(); i++) {
                     // 比key大的前一个子节点继续搜索
                     if (key.compareIndex(entries.get(i)) >= 0 && key.compareIndex(entries.get(i + 1)) < 0) {
-                        return children.get(i + 1).get(key, comareType);
+                        //如果这个范围内存在对应的子节点，则递归调用该子节点的get方法，继续查找
+                        return children.get(i + 1).get(key, compareType);
                     }
                 }
             }
@@ -220,6 +228,9 @@ public class BPNode {
         }
     }
 
+    /**
+     * 从索引树上删除索引元组
+     */
     protected boolean remove(IndexEntry key, BPTree tree) {
         boolean found = false;
         // 如果是叶子节点
@@ -229,13 +240,13 @@ public class BPNode {
                 return false;
             }
             found = true;
-            // 叶子节点 && 根节点,表明只有此一个节点,直接删除
-            if (isRoot) {
+
+            if (isRoot) {       // 叶子节点 && 根节点,表明只有此一个节点,直接删除
                 remove(key);
-            } else {
-                if (canRemoveDirect(key)) {
+            } else {            // 叶子节点但不是根节点
+                if (canRemoveDirect(key)) { //如果删除后当前页的空间利用率仍在50%以上，则可以直接删除
                     remove(key);
-                } else {
+                } else {        // 进行节点的借补或合并
                     // 先删除key
                     remove(key);
                     // 如果自身关键字数小于M/2,并且前节点关键字数大于M/2,则从其处借补
@@ -243,10 +254,8 @@ public class BPNode {
                         borrowLeafPrevious();
                     } else if (canLeafBorrowNext()) {
                         borrowLeafNext();
-                    } else {
-                        // 现在需要合并叶子节点
-                        if (canLeafMerge(previous)) {
-                            // 与前节点合并
+                    } else {    // 现在需要合并叶子节点
+                        if (canLeafMerge(previous)) {    // 与前节点合并
                             addPreNode(previous);
                             previous.recycle();
                             // 删掉当前节点的entry
@@ -254,8 +263,9 @@ public class BPNode {
                             if (parent == null || parent.getEntries() == null || currEntryIndex < 0) {
                                 currEntryIndex = getParentEntry(this);
                             }
+                            //删除父节点对当前节点指向的信息，合并后当前指向已经没有意义，降低查询效率
                             parent.getEntries().remove(currEntryIndex);
-                            // 然后删掉前驱
+                            // 然后删掉前置节点
                             parent.getChildren().remove(previous);
                             previous.setParent(null);
                             // 更新链表
@@ -264,6 +274,8 @@ public class BPNode {
                                 temp.getPrevious().setNext(this);
                                 // 更新前驱
                                 previous = temp.getPrevious();
+
+                                //将前置节点设置为不被引用的孤立节点，使其被垃圾回收
                                 temp.setPrevious(null);
                                 temp.setNext(null);
                             } else {
@@ -271,10 +283,10 @@ public class BPNode {
                                 previous.setNext(null);
                                 previous = null;
                             }
-                        } else if (canLeafMerge(next)) {
+                        } else if (canLeafMerge(next)) { // 与后节点合并
                             addNextNode(next);
                             next.recycle();
-                            // 同时删掉后继节点的entry
+                            // 同时删掉后置节点的entry
                             int currEntryIndex = getParentEntry(this.next);
                             parent.getEntries().remove(currEntryIndex);
                             parent.getChildren().remove(next);
@@ -294,8 +306,7 @@ public class BPNode {
                 }
                 parent.updateRemove(tree);
             }
-        } else {
-            // 如果不是叶子节点,沿着第一个子节点继续搜索
+        } else {  // 如果不是叶子节点,沿着第一个子节点继续搜索
             if (key.compareIndex(entries.get(0)) < 0) {
                 if (children.get(0).remove(key, tree)) {
                     found = true;
@@ -336,7 +347,7 @@ public class BPNode {
                     tree.setRoot(root);
                     root.setParent(null);
                     root.setRoot(true);
-                    // recyle废弃的根节点
+                    // recycle废弃的根节点
                     recycle();
                 }
             } else {
@@ -345,22 +356,22 @@ public class BPNode {
                 int prevIdx = currIdx - 1;
                 int nextIdx = currIdx + 1;
                 BPNode previous = null, next = null;
-                if (prevIdx >= 0) {
+                if (prevIdx >= 0) {                             //存在前置节点
                     previous = parent.getChildren().get(prevIdx);
                 }
-                if (nextIdx < parent.getChildren().size()) {
+                if (nextIdx < parent.getChildren().size()) {    //存在后置节点
                     next = parent.getChildren().get(nextIdx);
                 }
                 if (canNodeBorrowPrevious(previous)) {
-                    // 从前驱处借
+                    // 从前置节点借
                     // 从前叶子节点末尾节点添加到首位
                     borrowNodePrevious(previous);
                 } else if (canNodeBorrowNext(next)) {
-                    // 从后继中借
+                    // 从后置中借
                     borrowNodeNext(next);
                 } else {
-                    // 现在需要合并子节点
-                    if (canMergePrevois(previous)) {
+                    // 现在需要合并前置节点
+                    if (canMergePrevious(previous)) {
                         // 与前节点合并
                         addPreNode(previous);
                         previous.recycle();
@@ -392,11 +403,23 @@ public class BPNode {
         }
     }
 
+    /**
+     * 结合 B+树的结构图进行思考
+     * 当前节点在父节点对应的entries列表中的位置是当前节点在children列表中的索引位置减1
+     * B+树中的每个非叶子节点都有一个哨兵关键字，该关键字的值为无穷大（或无穷小），
+     * 并且该关键字不在任何子节点中，只起到一个分隔符的作用，因此需要跳过哨兵关键字
+     */
     private int getParentEntry(BPNode BPNode) {
         int index = parent.getChildren().indexOf(BPNode);
         return index - 1;
     }
 
+    /**
+     * 更新父节点中的entries指向
+     * 将前置节点的entries倒序添加到当前节点的entries的首元素
+     * 将前置节点的子节点倒序添加到当前节点的children的首元素
+     * @param bpNode
+     */
     public void addPreNode(BPNode bpNode) {
         if (!bpNode.isLeaf()) {
             int parentIdx = this.getParentEntry(this);
@@ -415,7 +438,7 @@ public class BPNode {
     }
 
     public void addNextNode(BPNode bpNode) {
-        // 后驱节点的entry下移
+        // 后置节点的entry下移
         // 叶子节点无需下移
         if (!bpNode.isLeaf()) {
             int parentIdx = this.getParentEntry(bpNode);
@@ -459,7 +482,7 @@ public class BPNode {
                 // 如果相等的话,放在相等集合中的任何一个插入点都是可以的
                 entries.add(i, indexEntry);
                 return;
-                //否则插入
+                //否则插入 ，循环如果进入下面的判定条件，说明之后的都大于 indexEntry ，插入返回
             } else if (entries.get(i).compareIndex(indexEntry) > 0) {
                 //插入到链首
                 if (i == 0) {
@@ -485,15 +508,15 @@ public class BPNode {
         // 变换为
         //      9
         // 3          10
-        int parentIdx = getParentEntry(previous) + 1;
+        int parentIdx = getParentEntry(previous) + 1;   // 10对应的索引
         // 先下放
-        IndexEntry downerKey = parent.getEntries().get(parentIdx);
+        IndexEntry downerKey = parent.getEntries().get(parentIdx);  // 将10下放
         // 由于是向previous借,肯定是0
         entries.add(0, downerKey);
         // previous的上提
-        parent.getEntries().remove(parentIdx);
-        parent.getEntries().add(parentIdx, previous.getEntries().get(size - 1));
-        previous.getEntries().remove(size - 1);
+        parent.getEntries().remove(parentIdx);  //删除10
+        parent.getEntries().add(parentIdx, previous.getEntries().get(size - 1));    // 将9变成父节点
+        previous.getEntries().remove(size - 1); // 删除前置节点的9
         // 将child也借过来
         BPNode borrowChild = previous.getChildren().get(childSize - 1);
         children.add(0, borrowChild);
@@ -508,9 +531,9 @@ public class BPNode {
         // 变换为
         //      11
         // 10         12
-        // 将child也借过来
+
         int parentIdx = getParentEntry(next);
-        // 先下放
+
         IndexEntry downerKey = parent.getEntries().get(parentIdx);
         // 由于是向next借,所以肯定是最后
         entries.add(downerKey);
@@ -535,6 +558,7 @@ public class BPNode {
         // 找到当前节点在父节点中的entries
         int currEntryIdx = getParentEntry(this);
         parent.getEntries().remove(currEntryIdx);
+        // 更新当前节点中entries的首元素在父节点的位置
         parent.getEntries().add(currEntryIdx, borrowKey);
     }
 
@@ -543,11 +567,10 @@ public class BPNode {
         IndexEntry borrowKey = next.getEntries().get(0);
         next.getEntries().remove(borrowKey);
         entries.add(borrowKey);
-        // 找到当前节点的后继节点在父节点中的parent
+        // 找到当前节点的后置节点在父节点中的parent
         int currEntryIdx = getParentEntry(this.next);
         parent.getEntries().remove(currEntryIdx);
-        // 是将next的第一个上提,而不是borrowKey
-        // 由于之前remove过了,所以index还是0
+        // 更新当前节点的后置节点中entries的首元素在父节点的位置
         parent.getEntries().add(currEntryIdx, next.getEntries().get(0));
     }
 
@@ -674,7 +697,6 @@ public class BPNode {
 
     // 判断当前节点是否包含此tuple
     protected boolean leafContainsForDelete(IndexEntry indexEntry) {
-        // 这边由于
         for (IndexEntry item : entries) {
             if (item.getDeleteCompareEntry().compareDeleteIndex(indexEntry) == 0) {
                 return true;
@@ -694,7 +716,9 @@ public class BPNode {
         return -1;
     }
 
-    // 删除节点
+    /**
+     * 直接从当前BPNode中删除索引元组
+     */
     protected boolean remove(IndexEntry key) {
         int index = -1;
         boolean found = false;
@@ -706,7 +730,7 @@ public class BPNode {
                 break;
             }
         }
-        if (index != -1) {
+        if (index != -1) {  //表示找到了对应的索引元组，从节点关键字entries链表中删除
             entries.remove(index);
         }
         if (found) {
@@ -730,6 +754,12 @@ public class BPNode {
         return false;
     }
 
+    /**
+     * 当删除一个索引元组后节点的利用率仍然很高时才可以直接删除，否则会影响查询效率
+     * 当前页的可用空间过多，意味着可能存在大量的碎片空间，这些碎片空间无法被利用，会浪费磁盘空间
+     * 同时也会导致查询时需要扫描更多的磁盘数据块，降低查询效率
+     * 需要进行节点的合并或者分裂来保证节点的大小在一个合适的范围内
+     */
     public boolean canRemoveDirect(IndexEntry key) {
         if ((bpPage.getContentSize() - Item.getItemLength(key)) > bpPage.getInitFreeSpace() / 2) {
             return true;
@@ -738,7 +768,9 @@ public class BPNode {
     }
 
     public boolean canLeafBorrowPrevious() {
+        // 如果entries的大小 小于等于 2，那么它们的合并后的节点可能会违反B+树的性质
         if (previous != null && previous.getEntries().size() > 2 && previous.getParent() == parent) {
+            //拿到前置节点中关键字的最后一个索引元组
             IndexEntry borrowKey = previous.getEntries().get(previous.getEntries().size() - 1);
             int borrowKeyLength = getBorrowKeyLength(borrowKey);
             if ((previous.bpPage.getContentSize() - borrowKeyLength > previous.bpPage.getInitFreeSpace() / 2)) {
@@ -753,6 +785,7 @@ public class BPNode {
     }
 
     public boolean canLeafBorrowNext() {
+        // 如果entries的大小 小于等于 2，那么它们的合并后的节点可能会违反B+树的性质
         if (next != null && next.getEntries().size() > 2 && next.getParent() == parent) {
             IndexEntry borrowKey = next.getEntries().get(0);
             int borrowKeyLength = getBorrowKeyLength(borrowKey);
@@ -794,9 +827,6 @@ public class BPNode {
             return true;
         } else if (this.entries.size() == 0 && bpNode.getEntries().size() >= 2) {
             // 这边特殊处理,是为了不破坏B+树的性质
-            // 这里不检查borrowKeyLength <= remainFreeSpace的原因是
-            // 限定了key <= 3/Max,而,之前的非直接删除条件是,contentSize <= Max/2
-            // 所以数学上 contentSize + key <=5/6 Max,不会溢出
             return true;
         } else {
             return false;
@@ -816,19 +846,19 @@ public class BPNode {
         return false;
     }
 
-    public boolean canMergePrevois(BPNode bpNode) {
+    public boolean canMergePrevious(BPNode bpNode) {
         if (bpNode == null) {
             return false;
         }
         if (bpNode != null && bpNode.getParent() == parent) {
-            int adjutSize = 0;
+            int adjustSize = 0;
             if (!bpNode.isLeaf()) {
                 int parentIdx = this.getParentEntry(this);
                 // 事实上是父parent的entry下移
                 IndexEntry downKey = this.getParent().getEntries().get(parentIdx);
-                adjutSize = Item.getItemLength(downKey);
+                adjustSize = Item.getItemLength(downKey);
             }
-            if (bpNode.bpPage.getContentSize() + adjutSize <= bpPage.cacluateRemainFreeSpace()) {
+            if (bpNode.bpPage.getContentSize() + adjustSize <= bpPage.cacluateRemainFreeSpace()) {
                 return true;
             }
         }
@@ -875,7 +905,7 @@ public class BPNode {
     private int getBorrowKeyLength(IndexEntry key) {
         // 因为borrowKey的话,需要将child也borrow过来
         if (!isLeaf) {
-            return Item.getItemLength(key) + ItemConst.INT_LEANGTH;
+            return Item.getItemLength(key) + ItemConst.INT_LENGTH;
         } else {
             return Item.getItemLength(key);
         }

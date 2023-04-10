@@ -11,8 +11,12 @@ import java.util.List;
  * 最基本的索引元组
  */
 public class IndexEntry {
-    // 元组中的值
-    protected Value[] values;
+
+    /**
+     * 存储了索引键的值，这些值用于快速查找和访问存储在数据库中的数据
+     * 元组中的值 values[0] 通常表示一些属性信息，如：isLeaf、isRoot、pageNo、parentPageNo、entryCount
+     */
+    protected Value[] values;   //当前索引列下具体的内容
 
     protected IndexDesc indexDesc;
 
@@ -101,6 +105,9 @@ public class IndexEntry {
         return innerCompare(indexEntry.getDeleteCompareEntry());
     }
 
+    /**
+     * MySQL中索引元组进行比较时，是用当前索引元组和另外一个索引元组中的比较项进行比较的
+     */
     private int innerCompare(IndexEntry indexEntry) {
         int min = values.length < indexEntry.getValues().length ? values.length : indexEntry.getValues().length;
         int comp = 0;
