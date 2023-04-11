@@ -23,8 +23,9 @@ public class SecondIndexCursor extends BaseIndexCursor {
         if (secondIndexEntry == null) {
             return null;
         }
+        // 根据二级索引查询得到其对应的聚簇索引
         IndexEntry searchEntry = getSearchEntry(secondIndexEntry);
-        // 直接找到其主键即可
+        // 利用聚簇索引找到相应的位置
         Cursor cursor = clusterIndex.searchEqual(searchEntry);
         if (cursor == null) {
             return null;

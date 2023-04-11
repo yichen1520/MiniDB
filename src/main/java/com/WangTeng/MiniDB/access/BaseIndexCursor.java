@@ -4,6 +4,9 @@ import com.WangTeng.MiniDB.index.bp.BPNode;
 import com.WangTeng.MiniDB.index.bp.Position;
 import com.WangTeng.MiniDB.meta.IndexEntry;
 
+/**
+ * 索引游标类
+ */
 public class BaseIndexCursor implements Cursor {
     // 开始位置
     private Position startPos;
@@ -12,6 +15,7 @@ public class BaseIndexCursor implements Cursor {
     // 当前位置
     private Position currentPos;
 
+    // 标记当前读取的数据是否和查询条件完全匹配
     private boolean isEqual;
 
     public BaseIndexCursor(Position startPos, Position endPos, boolean isEqual) {
