@@ -16,8 +16,10 @@ public class Table {
     // table名称
     private String name;
     // relation包含的元组描述
+    // 二级索引的最后一个属性是 rowId：主键索引对应的相关信息
     private Attribute[] attributes;
-    // 属性map   key: attributes.name  value: Attribute[i]
+    // 属性map   key: attributes.name  value: Attribute[i]中的下标i
+    // 用于使用druid中的Visitor类处理sql语句生成的语法树新建表初始化二级索引，快速查找对应下标
     private Map<String, Integer> attributesMap;
     // 主键属性
     private Attribute primaryAttribute;

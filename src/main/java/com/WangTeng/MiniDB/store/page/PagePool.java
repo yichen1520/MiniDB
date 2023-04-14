@@ -30,7 +30,11 @@ public class PagePool {
     }
 
     public Page getFreePage() {
+        //  Page page = frees.poll();
+        //  if (page == null) {
         return factory.newPage();
+        //  }
+        //  return page;
     }
 
     public void recycle(Page page) {

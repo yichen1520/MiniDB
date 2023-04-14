@@ -1,6 +1,6 @@
 package com.WangTeng.MiniDB.config;
 
-import com.WangTeng.MiniDB.engine.net.proto.utils.constants.Isolations;
+import com.WangTeng.MiniDB.engine.net.proto.utils.Isolations;
 
 public interface SystemConfig {
     int DEFAULT_PAGE_SIZE = 4096;   //4KB

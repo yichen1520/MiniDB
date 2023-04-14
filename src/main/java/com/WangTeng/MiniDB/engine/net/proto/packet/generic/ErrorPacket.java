@@ -10,13 +10,13 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * Error数据包中的message信息不包含消息的长度，只需要返回错误信息即可，最重要的是错误码
  */
-public class ERRPacket extends MySQLPacket {
+public class ErrorPacket extends MySQLPacket {
     public static final byte HEADER = (byte) 0xFF;
     public static final byte SQL_STATE_MARKER = (byte) '#'; //服务器状态标志
     public static final byte[] DEFAULT_SQL_STATE = "HY000".getBytes();
 
     public byte header = HEADER;                    //1个字节
-    public int errorCode;                           //2个字节
+    public int errno;                           //2个字节
     public byte sqlStateMarker = SQL_STATE_MARKER;  //1个字节
     public byte[] sqlState = DEFAULT_SQL_STATE;     //5个字节
     public byte[] message;
@@ -26,7 +26,7 @@ public class ERRPacket extends MySQLPacket {
         packetId = bin.packetId;
         MySQLMessage mm = new MySQLMessage(bin.data);
         header = mm.read();
-        errorCode = mm.readUB2();
+        errno = mm.readUB2();
         //判断服务器状态标志是否合法
         if (mm.hasRemaining() && mm.get(mm.getPosition()) == SQL_STATE_MARKER) {
             mm.read();
@@ -43,7 +43,7 @@ public class ERRPacket extends MySQLPacket {
         packetLength = mm.readUB3();
         packetId = mm.read();
         header = mm.read();
-        errorCode = mm.readUB2();
+        errno = mm.readUB2();
         //判断服务器状态标志是否合法
         if (mm.hasRemaining() && mm.get(mm.getPosition()) == SQL_STATE_MARKER) {
             mm.read();
@@ -60,7 +60,7 @@ public class ERRPacket extends MySQLPacket {
         BufferUtil.writeByte(buffer,packetId);
 
         BufferUtil.writeByte(buffer,header);
-        BufferUtil.writeUB2(buffer,errorCode);
+        BufferUtil.writeUB2(buffer, errno);
         BufferUtil.writeByte(buffer,sqlStateMarker);
         BufferUtil.writeBytes(buffer,sqlState);
         if(message != null){
