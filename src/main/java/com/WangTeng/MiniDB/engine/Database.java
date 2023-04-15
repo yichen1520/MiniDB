@@ -9,8 +9,8 @@ public class Database {
     // 默认端口号是8090
     private int serverPort = 8090;
     // 默认用户名密码是admin
-    private String userName = "admin";
-    private String passWd = "admin";
+    private String userName = "root";
+    private String passWd = "031008";
     private TableLoader tableLoader;
     private LogStore logStore;
 

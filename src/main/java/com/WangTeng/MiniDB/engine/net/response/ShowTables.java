@@ -68,7 +68,7 @@ public class ShowTables {
     }
 
     private static List<String> getTables() {
-        ArrayList<String> list = new ArrayList<String>();
+        ArrayList<String> list = new ArrayList<>();
         for (String tableName : TableManager.tableMap.keySet()) {
             list.add(tableName);
         }

@@ -69,9 +69,9 @@ public class ShowDatabases {
 
     private static List<String> getSchemas() {
         Database database = Database.getInstance();
-        ArrayList<String> list = new ArrayList<String>();
+        ArrayList<String> list = new ArrayList<>();
         // 当前没有schema概念
-        list.add("freedom");
+        list.add("minidb");
         return list;
     }
 }

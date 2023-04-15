@@ -16,11 +16,11 @@ public class HandshakePacket extends MySQLPacket {
     public byte protocolVersion;        //1个字节
     public byte[] serverVersion;
     public long threadId;               //4个字节
-    public byte[] seed;                 //挑战随机数，用于数据库验证
+    public byte[] seed;                 //挑战随机数，用于数据库验证(rand1)
     public int serverCapabilities;      //2个字节 服务权能，用于与客户端协商通讯方式
     public byte serverCharsetIndex;     //1个字节 字符编码
     public int serverStatus;            //2个字节
-    public byte[] restOfScrambleBuff;   //剩余加扰缓冲区(权能+密码)
+    public byte[] restOfScrambleBuff;   //剩余加扰缓冲区(rand2)
 
     public void read(BinaryPacket bin) {
         packetLength = bin.packetLength;

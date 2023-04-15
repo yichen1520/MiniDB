@@ -12,7 +12,7 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class SelectVersionComment {
     private static final byte[] VERSION_COMMENT =
-            "Freedom Server-0.1 author:alchemystar@163.com".getBytes();
+            "MiniDB Server-0.1 author:wt10051520@163.com".getBytes();
     private static final int FIELD_COUNT = 1;
     private static final ResultSetHeaderPacket header = PacketUtil.getHeader(FIELD_COUNT);
     private static final FieldPacket[] fields = new FieldPacket[FIELD_COUNT];

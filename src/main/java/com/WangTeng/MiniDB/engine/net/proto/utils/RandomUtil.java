@@ -1,17 +1,19 @@
 package com.WangTeng.MiniDB.engine.net.proto.utils;
 
+
 /**
  * 随机工具类
+ * 使用LCG算法，即线性同余法生成伪随机数，借鉴Random类
  */
 public class RandomUtil {
     private static final byte[] bytes = {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'q', 'w', 'e', 'r', 't',
             'y', 'u', 'i', 'o', 'p', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'z', 'x', 'c', 'v', 'b', 'n', 'm',
             'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Z', 'X',
             'C', 'V', 'B', 'N', 'M'};
-    private static final long multiplier = 0x5DEECE66DL;
-    private static final long addend = 0xBL;
-    private static final long mask = (1L << 48) - 1;
-    private static final long integerMask = (1L << 33) - 1;
+    private static final long multiplier = 0x5DEECE66DL;    // 25214903917
+    private static final long addend = 0xBL;                // 11
+    private static final long mask = (1L << 48) - 1;        // 281474976710655
+    private static final long integerMask = (1L << 33) - 1; // 8589934591
     private static final long seedUniquifier = 8682522807148012L;
 
     private static long seed;
@@ -21,7 +23,6 @@ public class RandomUtil {
         s = (s ^ multiplier) & mask;
         seed = s;
     }
-
     public static final byte[] randomBytes(int size) {
         byte[] bb = bytes;
         byte[] ab = new byte[size];

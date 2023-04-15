@@ -51,7 +51,9 @@ public class TableManager {
         }
         if (isPersist) {
             // 先落盘,再写入
-            Database.getInstance().getTableLoader().writeTableMeta(table);
+            Database database = Database.getInstance();
+            TableLoader loader = database.getTableLoader();
+            loader.writeTableMeta(table);
         }
         tableMap.put(table.getName(), table);
     }

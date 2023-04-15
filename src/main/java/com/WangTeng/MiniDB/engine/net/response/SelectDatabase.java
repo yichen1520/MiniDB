@@ -36,7 +36,7 @@ public class SelectDatabase {
         buffer = eof.writeBuf(buffer, ctx);
         byte packetId = eof.packetId;
         RowDataPacket row = new RowDataPacket(FIELD_COUNT);
-        row.add(StringUtil.encode("freedom", c.getCharset()));
+        row.add(StringUtil.encode("minidb", c.getCharset()));
         row.packetId = ++packetId;
         buffer = row.writeBuf(buffer, ctx);
         EOFPacket lastEof = new EOFPacket();

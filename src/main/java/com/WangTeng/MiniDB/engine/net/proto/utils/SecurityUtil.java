@@ -7,6 +7,9 @@ import java.security.NoSuchAlgorithmException;
  * 加解密，校验密码相关
  */
 public class SecurityUtil {
+    /**
+     * 使用SHA-1算法对密码进行了三次哈希，并使用seed进行了异或操作，最终返回哈希后的密码
+     */
     public static final byte[] scramble411(byte[] pass, byte[] seed) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-1");
         byte[] pass1 = md.digest(pass);
@@ -21,6 +24,9 @@ public class SecurityUtil {
         return pass3;
     }
 
+    /**
+     * 使用一种自定义的哈希算法，对密码和seed进行哈希后进行一系列的运算，并将结果转换成字符数组返回
+     */
     public static final String scramble323(String pass, String seed) {
         if ((pass == null) || (pass.length() == 0)) {
             return pass;

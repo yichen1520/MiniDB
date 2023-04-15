@@ -11,7 +11,7 @@ import com.WangTeng.MiniDB.config.SystemConfig;
 public class PageHeaderData {
     public static final Integer PAGE_HEADER_SIZE = 24;  //页头大小，包含一些元数据信息
     // Page开头的魔数
-    private String magicWord = "MiniDB";
+    private String magicWord = "MiniDBB";
     // freeSpace的起始偏移量
     private int lowerOffset;
     // 指向pageHeader中的lowerOffset起始位置
