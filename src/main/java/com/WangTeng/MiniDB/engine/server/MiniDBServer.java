@@ -59,7 +59,7 @@ public class MiniDBServer  extends Thread{
                     PooledByteBufAllocator.DEFAULT)
                     .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, SocketConfig.CONNECT_TIMEOUT_MILLIS)
                     .option(ChannelOption.SO_TIMEOUT, SocketConfig.SO_TIMEOUT);
-            ChannelFuture f = b.bind(database.getServerPort()).sync();
+            ChannelFuture f = b.bind("127.0.0.1",database.getServerPort()).sync();
             f.channel().closeFuture().sync();
 
         } catch (InterruptedException e) {

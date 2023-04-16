@@ -13,7 +13,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <app.encoding>UTF-8</app.encoding>
     </properties>
-
     <dependencies>
 
         <dependency>
@@ -97,6 +96,12 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>3.0-alpha-1</version>
         </dependency>
     </dependencies>
 
@@ -196,6 +201,11 @@
                     </additionalConfig>
                 </configuration>
             </plugin>
+
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                </plugin>
         </plugins>
     </build>
 </project>

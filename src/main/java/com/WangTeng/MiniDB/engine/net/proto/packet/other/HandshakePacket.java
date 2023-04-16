@@ -48,6 +48,7 @@ public class HandshakePacket extends MySQLPacket {
         BufferUtil.writeUB2(buffer, serverCapabilities);
         BufferUtil.writeByte(buffer, serverCharsetIndex);
         BufferUtil.writeUB2(buffer, serverStatus);
+        buffer.writeBytes(FILLER_13);
         BufferUtil.writeWithNull(buffer, restOfScrambleBuff);
         ctx.writeAndFlush(buffer);
     }
